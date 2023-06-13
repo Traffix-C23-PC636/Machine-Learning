@@ -1,0 +1,13 @@
+celery
+cvzone
+Flask
+numpy
+opencv-python
+pandas
+requests
+schedule
+scipy
+SQLAlchemy
+supervision
+torch
+torchvision
