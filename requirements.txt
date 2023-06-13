@@ -14,5 +14,6 @@ supervision
 torch
 torchvision
 ultralytics
-lap
 gunicorn
+
+#lap #manual install lap ( clone git + python setup.py install)
