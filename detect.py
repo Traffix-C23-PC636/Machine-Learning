@@ -6,32 +6,36 @@ from linezone import LineZoneFixed
 
 import time
 import schedule
+import requests
 
-class ObjectCounter:   
-    def __init__(self, TIMER, LINE_START, LINE_END):
-        self.TIMER=TIMER
-        self.LINE_START=LINE_START
-        self.LINE_END=LINE_END
+
+class ObjectCounter:
+    def __init__(self, TIMER, CCTVID, postURL, LINE_START, LINE_END):
+        self.CCTVID = CCTVID
+        self.postURL = postURL
+        self.TIMER = TIMER
+        self.LINE_START = LINE_START
+        self.LINE_END = LINE_END
         self.starttimer = 0
         self.stoptimer = 0
         self.isRunning = False
         self.job = None
         self.initCounter()
-        
+
     def initCounter(self):
-        self.line_counter = LineZoneFixed(start=self.LINE_START, end=self.LINE_END, class_id=[x for x in range(0,5)])
+        self.line_counter = LineZoneFixed(
+            start=self.LINE_START, end=self.LINE_END, class_id=[x for x in range(0, 5)])
 
     def startTimer(self):
         self.isRunning = True
         self.starttimer = time.time()
         self.job = schedule.every(self.TIMER).seconds.do(self.update)
-    
+
     def update(self):
         print('pushing data to the server ...')
         self.stoptimer = time.time()
-        self.composeRequest()
-        # self.sendRequest()
-        self.initCounter() # reset all counter to 0
+        self.composeAndSendRequest()
+        self.initCounter()  # reset all counter to 0
 
     def stopTimer(self):
         self.isRunning = False
@@ -39,34 +43,46 @@ class ObjectCounter:
         schedule.cancel_job(self.job)
         self.update()
 
-    def composeRequest(self):
-        mobil = self.line_counter.getIDCount([1],inCount=True,outCount=True)
-        motor = self.line_counter.getIDCount([0,2],inCount=True,outCount=True)
-        bus = self.line_counter.getIDCount([3],inCount=True,outCount=True)
-        truck = self.line_counter.getIDCount([4],inCount=True,outCount=True)
+    def composeAndSendRequest(self):
+        mobil = self.line_counter.getIDCount([1], inCount=True, outCount=True)
+        motor = self.line_counter.getIDCount(
+            [0, 2], inCount=True, outCount=True)
+        bus = self.line_counter.getIDCount([3], inCount=True, outCount=True)
+        truck = self.line_counter.getIDCount([4], inCount=True, outCount=True)
 
-        inc = self.line_counter.getIDCount([0,1,2,3,4],inCount=True)
-        outc = self.line_counter.getIDCount([0,1,2,3,4],outCount=True)
-        
+        inc = self.line_counter.getIDCount([0, 1, 2, 3, 4], inCount=True)
+        outc = self.line_counter.getIDCount([0, 1, 2, 3, 4], outCount=True)
+
+        data = {
+            "id_atcs": self.CCTVID,
+            "car": mobil,
+            "bus": bus,
+            "truck": truck,
+            "motorcycle":motor,
+            "data_in": inc,
+            "data_out": outc,
+        }
+        req = requests.post(self.postURL, json=data)
+        if (req.status_code == 200):
+            print('sukses mengupload data...')
+
         print(mobil, motor, bus, truck, inc, outc)
 
-        #TODO : CREATE REQUEST
 
-    def sendRequest(self, host):
-        #TODO : SEND THE REQUEST
-        pass
-
-def main(url,TIMER=10,CCTVID='',HOST='', LINE_START=sv.Point(0, 0), LINE_END = sv.Point(640, 640)):
-    vcap = cv2.VideoCapture(url)
+def main(device, TIMER=10, CCTVID='', postURL='', LINE_START=sv.Point(0, 0), LINE_END=sv.Point(640, 640)):
+    print('Capturing from device', device)
+    vcap = cv2.VideoCapture(device)
     model = YOLO('best.pt')
 
-    line_annotator = sv.LineZoneAnnotator(thickness=9, text_thickness=1, text_scale=0.5)
+    line_annotator = sv.LineZoneAnnotator(
+        thickness=9, text_thickness=1, text_scale=0.5)
     box_annotator = sv.BoxAnnotator(
         thickness=4,
         text_thickness=1,
         text_scale=0.5
     )
-    counter = ObjectCounter(TIMER=TIMER, LINE_START=LINE_START, LINE_END=LINE_END)
+    counter = ObjectCounter(TIMER=TIMER, CCTVID=CCTVID,
+                            postURL=postURL, LINE_START=LINE_START, LINE_END=LINE_END)
 
     print('starting the timer ...')
     counter.startTimer()
@@ -77,25 +93,27 @@ def main(url,TIMER=10,CCTVID='',HOST='', LINE_START=sv.Point(0, 0), LINE_END = s
         ret, frame = vcap.read()
 
         if frame is not None:
-            results =  model.track(frame, stream=True, show=False, verbose = False, tracker="bytetrack.yaml", )
+            results = model.track(
+                frame, stream=True, show=False, verbose=False, tracker="bytetrack.yaml", )
 
             for result in results:
                 frame = result.orig_img
                 detections = sv.Detections.from_yolov8(result)
-                
+
                 if result.boxes.id is not None:
                     detections.tracker_id = result.boxes.id.cpu().numpy().astype(int)
 
-                labels = [] 
-                
+                labels = []
+
                 frame = box_annotator.annotate(
-                    scene=frame, 
+                    scene=frame,
                     detections=detections,
                     labels=labels
                 )
 
                 counter.line_counter.trigger(detections=detections)
-                line_annotator.annotate(frame=frame, line_counter=counter.line_counter)
+                line_annotator.annotate(
+                    frame=frame, line_counter=counter.line_counter)
 
                 # cv2.imshow('frame', frame)
                 print(counter.line_counter.current_frame)
@@ -117,4 +135,4 @@ def main(url,TIMER=10,CCTVID='',HOST='', LINE_START=sv.Point(0, 0), LINE_END = s
     counter.stopTimer()
 
 
-main("https://atcs-dishub.bandung.go.id:1990/DjuandaBarat/stream.m3u8",)
+# main("https://atcs-dishub.bandung.go.id:1990/DjuandaBarat/stream.m3u8",)

@@ -1,6 +1,10 @@
 from celery import Celery
+from detect import main as detectStart
+
 import os
 import subprocess
+import supervision as sv
+from time import sleep
 
 celery = Celery("tasks",)
 celery.conf.broker_url = os.environ.get("CELERY_BROKER_URL", )
@@ -13,5 +17,8 @@ def startStream(url, device):
     return 0
 
 @celery.task
-def startDetection(cctvid, device):
+def startDetection(source,timer,cctvid, postURL,):
+    sleep(15) # wait until ffmpeg ready
     print('starting detection...')
+    detectStart(source,timer,cctvid,postURL,sv.Point(0, 0),sv.Point(640, 640))
+    return 0

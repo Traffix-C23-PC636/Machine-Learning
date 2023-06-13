@@ -6,7 +6,6 @@ class V4l2loopback:
     def __init__(self):
         self.devices = []
         self.used_devices = []
-        # self.
     
     def getDevices(self):
         devices = []
@@ -38,7 +37,7 @@ class V4l2loopback:
         #update devices array
         self.getDevices()
     
-    def getFreeDevices(self):
+    def getFreeDevice(self):
         not_used_devices =  [ x for x in self.devices if x not in self.used_devices]
         if(len(not_used_devices) == 0):
             print('No device left, cancelled')
@@ -47,22 +46,27 @@ class V4l2loopback:
         self.used_devices.append(device)
         return device
     
+    def releaseDevice(self, device):
+        for i in range(len(self.used_devices)):
+            if(self.used_devices[i] == device):
+                del self.used_devices[i]
+
     def startForwardStream(self,url, device=None):
         if(device == None):
-            not_used_devices =  [ x for x in self.devices if x not in self.used_devices]
-            if(len(not_used_devices) == 0):
-                print('No device left, cancelled')
-                return
-            device = not_used_devices[0]
+            device = self.getFreeDevice()
         try:
-            result = startStream.delay(url, device)
-            print(result)
-            print(result.ready())
-            
+            startStream.delay(url, device)
         except Exception as e:
             print(e)
 
 
 # v4l2 = V4l2loopback()
 # v4l2.createInstance(5)
+# device = v4l2.getFreeDevice()
+# device = v4l2.getFreeDevice()
+# device = v4l2.getFreeDevice()
+# device = v4l2.getFreeDevice()
+# device = v4l2.getFreeDevice()
+# v4l2.releaseDevice(device)
+# print(v4l2.used_devices)
 # v4l2.startForwardStream('https://atcs-dishub.bandung.go.id:1990/DjuandaBarat/stream.m3u8')

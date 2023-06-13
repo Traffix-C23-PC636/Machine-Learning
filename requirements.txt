@@ -11,3 +11,5 @@ SQLAlchemy
 supervision
 torch
 torchvision
+ultralytics
+lap
