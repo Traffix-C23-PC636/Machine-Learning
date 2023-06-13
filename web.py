@@ -1,5 +1,3 @@
-import os
-
 from flask import Flask, request, redirect, jsonify
 from tasks import celery, startStream, startDetection
 from v4l2loopback import V4l2loopback
