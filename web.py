@@ -29,7 +29,7 @@ def create_app(test_config=None):
         tasktodevice[videoStreamTask.id] = deviceid
         task_id.append(videoStreamTask.id)
 
-        detectionTask = startDetection.delay(videoToDeviceInt(deviceid),5*60,idatcs, 'https://api.traffix.my.id/api/statistik',)
+        detectionTask = startDetection.delay(videoToDeviceInt(deviceid),1*60,idatcs, 'https://api.traffix.my.id/api/statistik',)
         task_id.append(detectionTask.id)
 
         return jsonify({"task_id": task_id,"deviceid":deviceid}), 202
