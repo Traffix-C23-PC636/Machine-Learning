@@ -42,7 +42,7 @@ class ObjectCounter:
         self.isRunning = False
         self.stoptimer = time.time()
         schedule.cancel_job(self.job)
-        self.update()
+        self.update() #pushing last data to the server
 
     def composeAndSendRequest(self):
         mobil = self.line_counter.getIDCount([1], inCount=True, outCount=True)
