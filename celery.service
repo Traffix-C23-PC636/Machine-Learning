@@ -1,0 +1,13 @@
+[Unit]
+Description=Celery Worker
+After=network.target
+
+[Service]
+User=m284dsx1749
+Group=m284dsx1749
+WorkingDirectory=/home/m284dsx1749/Machine-Learning
+Environment="PATH=/home/m284dsx1749/Machine-Learning/env/bin"
+ExecStart=/home/m284dsx1749/Machine-Learning/env/bin/celery -A tasks worker --loglevel=INFO
+
+[Install]
+WantedBy=multi-user.target
