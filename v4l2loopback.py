@@ -47,9 +47,8 @@ class V4l2loopback:
         return device
     
     def releaseDevice(self, device):
-        for i in range(len(self.used_devices)):
-            if(self.used_devices[i] == device):
-                del self.used_devices[i]
+        if device in self.used_devices:
+            self.used_devices.remove(device)
 
     def startForwardStream(self,url, device=None):
         if(device == None):

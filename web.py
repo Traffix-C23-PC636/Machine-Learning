@@ -7,6 +7,8 @@ v4l2 = V4l2loopback()
 v4l2.createInstance(10)
 
 tasktodevice = {}
+task1totask2 = {}
+tasks = []
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -28,9 +30,14 @@ def create_app(test_config=None):
         videoStreamTask = startStream.delay(streamurl, deviceid)
         tasktodevice[videoStreamTask.id] = deviceid
         task_id.append(videoStreamTask.id)
+        tasks.append(videoStreamTask.id)
 
         detectionTask = startDetection.delay(videoToDeviceInt(deviceid),1*60,idatcs, 'https://api.traffix.my.id/api/statistik',)
         task_id.append(detectionTask.id)
+        tasks.append(detectionTask.id)
+
+        #mapping task1 to task2
+        task1totask2[videoStreamTask.id] = detectionTask.id 
 
         return jsonify({"task_id": task_id,"deviceid":deviceid}), 202
 
@@ -39,10 +46,46 @@ def create_app(test_config=None):
     def stop_task():
         task_id = request.form['task_id']
         celery.AsyncResult(task_id).revoke(terminate=True)
-        if task_id in tasktodevice:
+
+        if task_id in tasks:
+            tasks.remove(task_id)
+
+        if task_id in task1totask2.keys():
             v4l2.releaseDevice(tasktodevice[task_id])
-        
+            del tasktodevice[task_id]
+
+            task2 = task1totask2[task_id]
+            celery.AsyncResult(task2).revoke(terminate=True)
+            del task1totask2[task_id]
+            if(task2 in tasks):
+                tasks.remove(task2)
+
         return jsonify({"status":"ok"}),200
+    
+    @app.route('/stopAll',methods=["POST"])
+    def stopAllTask():
+        for task_id in tasks:
+            celery.AsyncResult(task_id).revoke(terminate=True)
+            tasks.remove(task_id)
+
+            if task_id in task1totask2.keys():
+                v4l2.releaseDevice(tasktodevice[task_id])
+                del tasktodevice[task_id]
+
+                task2 = task1totask2[task_id]
+                celery.AsyncResult(task2).revoke(terminate=True)
+                del task1totask2[task_id]
+                if(task2 in tasks):
+                    tasks.remove(task2)
+        return jsonify({"status":"ok"}),200
+    
+    @app.route("/tasks", methods=["GET"])
+    def list_known_tasks():
+        return jsonify({
+            'tasks' : tasks,
+            'tasktodevice':tasktodevice,
+            'task1totask2':task1totask2
+        }),200
 
     @app.route("/tasks/<task_id>", methods=["GET"])
     def get_status(task_id):
