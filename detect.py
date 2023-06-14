@@ -3,6 +3,7 @@ import time
 from ultralytics import YOLO
 import supervision as sv
 from linezone import LineZoneFixed
+from utils import upload
 
 import time
 import schedule
@@ -45,8 +46,7 @@ class ObjectCounter:
 
     def composeAndSendRequest(self):
         mobil = self.line_counter.getIDCount([1], inCount=True, outCount=True)
-        motor = self.line_counter.getIDCount(
-            [0, 2], inCount=True, outCount=True)
+        motor = self.line_counter.getIDCount([0, 2], inCount=True, outCount=True)
         bus = self.line_counter.getIDCount([3], inCount=True, outCount=True)
         truck = self.line_counter.getIDCount([4], inCount=True, outCount=True)
 
@@ -62,14 +62,8 @@ class ObjectCounter:
             "data_in": inc,
             "data_out": outc,
         }
-        req = requests.post(self.postURL, json=data)
-        if (req.status_code == 200):
-            print('sukses mengupload data...')
-        else:
-            print('gagal upload data!\nGot Response: ', req.text)
-
-        print(mobil, motor, bus, truck, inc, outc)
-
+        print("JUMLAH :",mobil, motor, bus, truck, inc, outc)
+        upload(self.postURL, data)
 
 def main(device, TIMER=10, CCTVID='', postURL='', LINE_START=sv.Point(0, 0), LINE_END=sv.Point(640, 640)):
     print('Capturing from device', device)
