@@ -35,7 +35,7 @@ def create_app(test_config=None):
         return jsonify({"task_id": task_id,"deviceid":deviceid}), 202
 
 
-    @app.route('/stop/',methods=["POST"])
+    @app.route('/stop',methods=["POST"])
     def stop_task():
         task_id = request.form['task_id']
         celery.AsyncResult(task_id).revoke(terminate=True)

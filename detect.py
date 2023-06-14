@@ -90,7 +90,7 @@ def main(device, TIMER=10, CCTVID='', postURL='', LINE_START=sv.Point(0, 0), LIN
 
         if frame is not None:
             results = model.track(
-                frame, stream=True, show=False, verbose=False, tracker="bytetrack.yaml", )
+                frame, stream=True, show=False, verbose=False, tracker="bytetrack.yaml", persist=True, )
 
             for result in results:
                 frame = result.orig_img
