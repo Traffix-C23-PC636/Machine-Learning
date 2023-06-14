@@ -65,6 +65,8 @@ class ObjectCounter:
         req = requests.post(self.postURL, json=data)
         if (req.status_code == 200):
             print('sukses mengupload data...')
+        else:
+            print('gagal upload data!\nGot Response: ', req.text)
 
         print(mobil, motor, bus, truck, inc, outc)
 
