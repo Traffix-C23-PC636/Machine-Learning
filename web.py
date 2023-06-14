@@ -41,7 +41,6 @@ def create_app(test_config=None):
 
         return jsonify({"task_id": task_id,"deviceid":deviceid}), 202
 
-
     @app.route('/stop',methods=["POST"])
     def stop_task():
         task_id = request.form['task_id']
@@ -79,6 +78,25 @@ def create_app(test_config=None):
                     tasks.remove(task2)
         return jsonify({"status":"ok"}),200
     
+    @app.route('/purge', methods=["POST"])
+    def purge_queue():
+        i = celery.control.inspect()
+        for queues in (i.active(), i.reserved(), i.scheduled()):
+            for task_list in queues.values():
+                for task in task_list:
+                    task_id = task.get("request", {}).get("id", None) or task.get("id", None)
+                    celery.control.revoke(task_id,terminate=True)
+        return jsonify({"status":"ok"}),200
+     
+    @app.route('/queues', methods=["GET"])
+    def get_queue():
+        i = celery.control.inspect()
+        return jsonify({
+            "scheduled" : i.scheduled(),
+            "active" : i.active(),
+            "reserved" : i.reserved(),
+        }),200
+
     @app.route("/tasks", methods=["GET"])
     def list_known_tasks():
         return jsonify({
