@@ -32,7 +32,7 @@ def create_app(test_config=None):
         task_id.append(videoStreamTask.id)
         tasks.append(videoStreamTask.id)
 
-        detectionTask = startDetection.delay(videoToDeviceInt(deviceid),1*60,idatcs, 'https://api.traffix.my.id/api/statistik',)
+        detectionTask = startDetection.delay(videoToDeviceInt(deviceid),3*60,idatcs, 'https://api.traffix.my.id/api/statistik',)
         task_id.append(detectionTask.id)
         tasks.append(detectionTask.id)
 
