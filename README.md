@@ -5,9 +5,10 @@ This is machine learning project for Traffic Detection from Capstone Group C23-P
 ## Requirements
 
 1. python3 
-2. ffmpeg ( for stream m3u8 file )
-3. v4l2loopback ( for virtual device )
-4. RabbitMQ ( for task distribution )
+2. pip
+3. ffmpeg ( for stream m3u8 file )
+4. v4l2loopback ( for virtual device )
+5. RabbitMQ ( for task distribution )
 
 
 ## Installation
