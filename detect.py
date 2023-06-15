@@ -68,8 +68,9 @@ class ObjectCounter:
 def main(device, TIMER=10, CCTVID='', postURL='', LINE_START=sv.Point(0, 0), LINE_END=sv.Point(640, 640)):
     print('Capturing from device', device)
     vcap = cv2.VideoCapture(device)
-    model = YOLO('best.pt')
-
+    model = YOLO('best.onnx') # using exported onnx model
+    #model = YOLO('best.pt') 
+    
     line_annotator = sv.LineZoneAnnotator(
         thickness=9, text_thickness=1, text_scale=0.5)
     box_annotator = sv.BoxAnnotator(
