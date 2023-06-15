@@ -7,7 +7,7 @@ User=m284dsx1749
 Group=m284dsx1749
 WorkingDirectory=/home/m284dsx1749/Machine-Learning
 Environment="$PATH:/home/m284dsx1749/Machine-Learning/env/bin"
-ExecStart=/home/m284dsx1749/Machine-Learning/env/bin/gunicorn --workers 3 --bind unix:wsgi.sock wsgi:app
+ExecStart=/home/m284dsx1749/Machine-Learning/env/bin/gunicorn --workers 1 --bind unix:wsgi.sock wsgi:app
 
 [Install]
 WantedBy=multi-user.target
