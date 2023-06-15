@@ -82,7 +82,7 @@ def create_app(test_config=None):
     @app.route('/purge', methods=["POST"])
     def purge_queue():
         try:
-            subprocess.run(['sudo', 'systemctl','stop', 'mlapi'])
+            subprocess.run(['sudo', 'systemctl','stop', 'celery'])
         except:
             pass
         i = celery.control.inspect()
@@ -92,7 +92,7 @@ def create_app(test_config=None):
                     task_id = task.get("request", {}).get("id", None) or task.get("id", None)
                     celery.control.revoke(task_id,terminate=True)
         try:
-            subprocess.run(['sudo', 'systemctl','start', 'mlapi'])
+            subprocess.run(['sudo', 'systemctl','start', 'celery'])
         except:
             pass
         return jsonify({"status":"ok"}),200
