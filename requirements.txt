@@ -15,5 +15,5 @@ torch
 torchvision
 ultralytics
 gunicorn
-
+onnxruntime # if using onnx model
 #lap #manual install lap ( clone git + python setup.py install)
