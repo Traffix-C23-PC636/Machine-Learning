@@ -2,6 +2,7 @@ from flask import Flask, request, redirect, jsonify
 from tasks import celery, startStream, startDetection
 from v4l2loopback import V4l2loopback
 from utils import videoToDeviceInt
+import subprocess 
 
 v4l2 = V4l2loopback()
 v4l2.createInstance(10)
@@ -80,12 +81,20 @@ def create_app(test_config=None):
     
     @app.route('/purge', methods=["POST"])
     def purge_queue():
+        try:
+            subprocess.run(['sudo', 'systemctl','stop', 'mlapi'])
+        except:
+            pass
         i = celery.control.inspect()
         for queues in (i.active(), i.reserved(), i.scheduled()):
             for task_list in queues.values():
                 for task in task_list:
                     task_id = task.get("request", {}).get("id", None) or task.get("id", None)
                     celery.control.revoke(task_id,terminate=True)
+        try:
+            subprocess.run(['sudo', 'systemctl','start', 'mlapi'])
+        except:
+            pass
         return jsonify({"status":"ok"}),200
      
     @app.route('/queues', methods=["GET"])
