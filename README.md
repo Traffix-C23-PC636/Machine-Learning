@@ -29,7 +29,7 @@ Note : Build `lap` yourself if u got error when installing lap
 2. Start celery worker `.celery.sh` (may need to install message broker like RabbitMQ or Redis)
 3. Start web.py `python web.py`
  
-## Production Installation
+## Production Installation 
 
 Rather than executing scripts manually one by one, we will use systemd service for start / stop / watch status and enable / disable services. On this way, we don't need to start the scripts every time the system restarts.
 
